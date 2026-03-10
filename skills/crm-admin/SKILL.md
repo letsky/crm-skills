@@ -66,9 +66,9 @@ export CRM_ADMIN_URL="https://your-crm-domain.com"
 |------|----------|----------|
 | 订单管理（搜索、筛选、详情、关闭等） | `modules/order-management.md` | 用户提及订单相关操作时 |
 
-## Ant Design Pro 组件特征
+## Ant Design 组件特征
 
-这个系统基于 Ant Design Pro 构建，了解其组件特征有助于准确定位元素：
+这个系统基于 Ant Design 构建，了解其组件特征有助于准确定位元素：
 
 - **菜单项**：`menuitem` role
 - **表格**：`table > rowgroup > row > cell` 结构
