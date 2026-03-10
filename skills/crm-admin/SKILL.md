@@ -64,8 +64,8 @@ export CRM_ADMIN_URL="https://your-crm-domain.com"
 
 | 模块 | 参考文件 | 何时阅读 |
 |------|----------|----------|
-| 订单管理（搜索、筛选、详情、关闭等） | `modules/order-management.md` | 用户提及订单相关操作时 |
-| 转账单申请（新建、上传截图等） | `modules/order-management.md#三转账单申请` | 用户提及转账单、新建转账单时 |
+| 订单管理（搜索、筛选、详情、关闭等） | `references/order-management.md` | 用户提及订单相关操作时 |
+| 转账单申请（新建、上传截图等） | `references/order-management.md#三转账单申请` | 用户提及转账单、新建转账单时 |
 
 ## Ant Design 组件特征
 
