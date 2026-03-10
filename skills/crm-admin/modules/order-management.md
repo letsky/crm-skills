@@ -245,3 +245,130 @@ playwright-cli --session=crm snapshot
 - 仅「待支付」状态的子订单可以关闭
 - 「已支付」状态的子订单「关闭订单」按钮为 disabled，不可操作
 - 「已关闭」状态的子订单所有操作按钮均为 disabled
+
+---
+
+## 三、转账单申请
+
+转账单用于记录客户通过银行转账等方式支付的款项，需关联后台已有的主订单。
+
+### 页面固定元素表
+
+#### 列表页元素
+
+| 元素用途 | Role + Name（稳定选择器） | 说明 |
+|---------|--------------------------|------|
+| 新建转账单按钮 | `button "plus 新建转账单"` | 点击进入新建流程 |
+| 筛选 Tab | `tab "筛选"` | 默认选中 |
+| 搜索 Tab | `tab "搜索"` | 按订单号精确搜索 |
+| 提交时间 | `textbox "提交时间 :"` | 日期范围筛选 |
+| 审核状态 | `combobox "审核状态 :"` | 全部/待审核/已通过/已拒绝 |
+| 重置按钮 | `button "重 置"` | 重置筛选条件 |
+
+#### 新建转账单流程（三步骤）
+
+**步骤1：填写转账信息**
+
+| 元素用途 | Role + Name（稳定选择器） | 说明 |
+|---------|--------------------------|------|
+| 返回按钮 | `button "返回"` | 返回列表页 |
+| 订单编号输入框 | `textbox "订单编号 :"` | 输入主订单号 |
+| 搜索按钮 | `button "搜 索"` | 搜索订单信息 |
+| 转账金额输入框 | `textbox "* 客户本次转账金额 :"` | 必填，输入转账金额 |
+| 收款商户下拉框 | `combobox "* 收款商户 :"` | 必填，选择收款商户类型 |
+| 上传截图按钮 | `button "plus 上传"` | 必填，上传转账相关截图 |
+| 备注输入框 | `textbox "* 备注 :"` | 必填，填写备注信息 |
+| 下一步按钮 | `button "下一步"` | 进入确认页面 |
+
+**收款商户选项**
+
+点击下拉框后从页面动态获取。
+
+**步骤2：确认转账信息**
+
+| 元素用途 | Role + Name（稳定选择器） | 说明 |
+|---------|--------------------------|------|
+| 上一步按钮 | `button "上一步"` | 返回修改信息 |
+| 提交按钮 | `button "提 交"` | 提交转账单 |
+
+**步骤3：完成**
+
+提交成功后显示完成页面。
+
+### 操作流程
+
+#### 新建转账单
+
+**⚠️ 填写前必须询问用户提供以下信息**：
+
+| 必填字段 | 询问内容 | 示例 |
+|---------|----------|------|
+| 转账金额 | 客户本次转账金额是多少？ | 0.03 |
+| 收款商户 | 请选择收款商户类型（点击下拉框后从页面选项中选择） | - |
+| 相关截图 | 请提供转账截图文件的绝对路径 | /Users/xxx/screenshot.png |
+| 备注 | 请输入转账单备注内容 | 订单转账 |
+
+**注意**：以上四个字段均为必填项，必须向用户询问后才能继续操作。
+
+```bash
+# 1. 导航到转账单申请页
+playwright-cli --session=crm goto $CRM_ADMIN_URL/sale/transfer-order-create
+playwright-cli --session=crm snapshot
+
+# 2. 点击「新建转账单」按钮
+playwright-cli --session=crm click <新建转账单button_ref>
+playwright-cli --session=crm snapshot
+
+# 3. 输入订单号并搜索
+playwright-cli --session=crm fill <订单编号textbox_ref> "m2031218796473016320"
+playwright-cli --session=crm click <搜索button_ref>
+playwright-cli --session=crm snapshot
+
+# 4. 填写转账金额
+playwright-cli --session=crm fill <转账金额textbox_ref> "0.03"
+
+# 5. 选择收款商户（先点击下拉框获取选项，再让用户选择）
+playwright-cli --session=crm click <收款商户combobox_ref>
+playwright-cli --session=crm snapshot
+# 从snapshot中获取收款商户选项，询问用户选择哪个
+playwright-cli --session=crm click <用户选择的option_ref>
+
+# 6. 上传截图（需先点击上传按钮触发文件选择器）
+playwright-cli --session=crm click <上传button_ref> && sleep 0.5 && playwright-cli --session=crm upload /path/to/screenshot.png
+
+# 7. 填写备注
+playwright-cli --session=crm fill <备注textbox_ref> "转账备注内容"
+playwright-cli --session=crm snapshot
+
+# 8. 点击「下一步」进入确认页
+playwright-cli --session=crm click <下一步button_ref>
+playwright-cli --session=crm snapshot
+
+# 9. 确认信息后点击「提交」
+playwright-cli --session=crm click <提交button_ref>
+playwright-cli --session=crm snapshot
+```
+
+### 业务限制
+
+**⚠️ 订单状态限制**：
+- 只能为「待支付」或「未完成」状态的订单创建转账单
+- 「已关闭」状态的订单无法创建转账单，提交时会失败
+- 「已冻结」状态的订单可能无法创建转账单
+
+**⚠️ 金额限制**：
+- 转账金额不能超过订单的待付金额
+
+**⚠️ 必填字段**：
+- 客户本次转账金额
+- 收款商户
+- 相关截图（必须上传图片）
+- 备注
+
+### 常见错误处理
+
+| 错误提示 | 原因 | 解决方案 |
+|---------|------|----------|
+| 转账单创建失败，请重试 | 订单状态不符合要求（如已关闭） | 检查订单状态，使用有效订单 |
+| 订单不存在 | 输入的订单号无效 | 确认订单号正确 |
+| 文件访问受限 | 上传的图片不在允许的目录 | 确保图片在项目目录内 |
