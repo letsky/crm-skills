@@ -1,13 +1,15 @@
 ---
 name: crm-admin
 description: >
-  Automate CRM admin operations on 管理系统.
-  Handles login, order search, order close, customer management, and common 
-  admin tasks using Playwright CLI browser automation. Use this skill whenever 
-  the user mentions CRM后台, 查订单, 关闭订单, 订单管理, 搜索订单, CRM登录, 
-  后台, or any operation involving the CRM admin system — even 
-  if they don't explicitly say "CRM". Also trigger when they paste an order ID 
-  like "m20297..." and want to look it up or take action on it.
+  自动化操作 CRM 后台管理系统，支持登录、订单查询与管理、转账单申请等操作。
+  
+  【触发场景】只要用户提及以下任一内容，就必须使用此技能：
+  - 订单相关：订单号（如 m20297...）、查订单、搜订单、订单详情、关闭订单、子订单
+  - 转账相关：转账单、申请转账、上传转账截图
+  - 系统操作：后台、CRM、登录、管理系统
+  - 模糊意图：用户想查某个订单状态、想操作后台、想处理客户问题等
+  
+  即使用户没有明确说"CRM"或"后台"，只要涉及订单查询或后台操作，都应触发此技能。
 version: 1.5.0
 skillKey: crm-admin
 emoji: 🏢
@@ -42,7 +44,7 @@ export CRM_ADMIN_URL="https://your-crm-domain.com"
 1. **检查会话** → `playwright-cli list`
 2. **有会话** → `state-load crm-auth.json` 恢复登录态，再 `goto` 目标 URL
 3. **无会话** → `open $CRM_ADMIN_URL --headed`
-4. **判断是否需要登录** → snapshot 检查 URL 是否为 `/user/login`，是则参考 `references/login-flow.md`
+4. **判断是否需要登录** → snapshot 检查当前页面是否为登录页，是则参考 `references/login-flow.md`
 5. **执行操作** → 搜索、筛选、详情、关闭等
 6. **验证结果** → 截图确认
 
@@ -62,10 +64,7 @@ export CRM_ADMIN_URL="https://your-crm-domain.com"
 
 ## 业务模块
 
-| 模块 | 参考文件 | 何时阅读 |
-|------|----------|----------|
-| 订单管理（搜索、筛选、详情、关闭等） | `references/order-management.md` | 用户提及订单相关操作时 |
-| 转账单申请（新建、上传截图等） | `references/order-management.md#三转账单申请` | 用户提及转账单、新建转账单时 |
+- [订单管理](references/order-management.md)：搜索、筛选、详情、关闭、子订单、转账单等
 
 ## Ant Design 组件特征
 
@@ -80,5 +79,5 @@ export CRM_ADMIN_URL="https://your-crm-domain.com"
 
 ## 错误处理
 
-- **登录态丢失**（URL 跳到 `/user/login`）→ 先 `state-load crm-auth.json`，失败再走完整登录流程（见 `references/login-flow.md`）
-- **短信验证码** → 截图并询问用户，不可跳过（安全验证只有用户本人能提供）
+- **登录态丢失**（页面跳转到登录页）→ 先 `state-load crm-auth.json`，失败再走完整登录流程（见 `references/login-flow.md`）
+- **短信验证码** → 询问用户，不可跳过
